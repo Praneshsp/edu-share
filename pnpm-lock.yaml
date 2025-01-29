@@ -8,6 +8,9 @@ dependencies:
   '@supabase/ssr':
     specifier: ^0.5.2
     version: 0.5.2(@supabase/supabase-js@2.48.1)
+  '@supabase/supabase-js':
+    specifier: ^2.48.1
+    version: 2.48.1
   next:
     specifier: 15.1.6
     version: 15.1.6(react-dom@19.0.0)(react@19.0.0)
