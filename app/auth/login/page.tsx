@@ -30,7 +30,7 @@ const SignUpPage = () => {
             {/* Header */}
             <div className="space-y-3 text-center">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Join EduShare
+              Welcome Back!!
               </h1>
               <p className="text-lg text-gray-600">
                 Your Gateway to Collaborative Learning
@@ -64,7 +64,7 @@ const SignUpPage = () => {
               </div>
 
               <Button className="w-full h-12 text-lg bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
-                Create Account
+                Login
               </Button>
             </form>
 
@@ -95,9 +95,9 @@ const SignUpPage = () => {
             </Button>
 
             <p className="text-center text-base text-gray-600">
-              Already have an account?{' '}
-              <a className="font-semibold cursor-pointer text-purple-600 hover:text-purple-500" onClick={() => router.push('/auth/login')}>
-                Sign in
+              Don't have an account?{' '}
+              <a className="font-semibold cursor-pointer text-purple-600 hover:text-purple-500" onClick={() => router.push('/auth/signup')}>
+                Sign up
               </a>
             </p>
           </CardContent>
