@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from "sonner";
 import { Check, X } from 'lucide-react';
+import { login, signup } from '@/actions/auth';
 
 
 const PasswordRequirement = ({ isValid, text }: { isValid: boolean; text: string }) => (
@@ -55,17 +56,15 @@ export default function SignUpPage () {
       const formData = new FormData(event.currentTarget);
       const email = formData.get('email') as string;
       
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Signup failed');
+      const response = await signup(formData);
+
+      if (!response.success) {
+        toast.error(response.error);
+        return;
       }
-      
+      console.log(response)
+
+      return;
       setVerificationEmail(email);
       toast.success('Account created successfully! Please check your email.');
       
@@ -223,19 +222,6 @@ export default function SignUpPage () {
               </div>
             </div>
 
-            <Button 
-              variant="outline" 
-              className="w-full h-12 text-lg border-2 border-gray-200 hover:border-purple-300 hover:bg-purple-50 rounded-xl flex items-center justify-center gap-3 transition-all duration-200"
-            >
-              <svg className="w-6 h-6" viewBox="0 0 24 24">
-                <path
-                  fill="currentColor"
-                  d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27c3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10c5.35 0 9.25-3.67 9.25-9.09c0-1.15-.15-1.81-.15-1.81Z"
-                />
-              </svg>
-              Continue with Google
-            </Button>
-
             <p className="text-center text-base text-gray-600">
               Already have an account?{' '}
               <a 
@@ -252,4 +238,3 @@ export default function SignUpPage () {
   );
 };
 
-// Rest of the LoginPage component remains unchanged...

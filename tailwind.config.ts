@@ -10,6 +10,13 @@ export default {
   theme: {
   	extend: {
   		colors: {
+			'bg-primary': '#F9F8F4',
+			'bg-secondary': '#F4F2ED',
+			'primary-gold': '#D3A34D',
+			'primary-blue': '#294655',
+			'secondary-gold': '#EBDEC9',
+			'text-primary': '#3E3E3E',
+			'text-taupe': '#B1A699',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -55,7 +62,11 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+		fontFamily: {
+			'sans': ['Inter', 'system-ui', 'sans-serif'],
+			'display': ['Montserrat', 'system-ui', 'sans-serif']
+		}
   	}
   },
   plugins: [require("tailwindcss-animate")],

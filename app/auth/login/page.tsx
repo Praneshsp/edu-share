@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from "sonner";
+import { login } from '@/actions/auth';
 
 
-export const AUTH_ERRORS = {
+export const AUTH_ERRORS : any = {
   'invalid_credentials': 'Invalid email or password',
   'email_not_confirmed': 'Please verify your email before logging in',
   'user_not_found': 'No account found with this email',
@@ -21,31 +22,30 @@ export default function LoginPage  ()  {
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsLoading(true);
-
+  
     try {
       const formData = new FormData(event.currentTarget);
       
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        const errorMessage = AUTH_ERRORS[data.error as keyof typeof AUTH_ERRORS] || AUTH_ERRORS.default;
-        throw new Error(errorMessage);
+      const response  = await login(formData); // Get the response from the server
+  
+      if (!response.success) {
+        // Map error code to readable message
+        const errorMessage = AUTH_ERRORS[response.code ?? 'default'] || response.error;
+        toast.error(errorMessage);
+        return; // Stop execution
       }
-      
-      toast.success('Successfully logged in!');
-      router.push('/dashboard');
-      
+  
+      toast.success("Successfully logged in!");
+      router.push("/dashboard/groups"); 
+  
     } catch (error: any) {
-      toast.error(error.message || 'Failed to login');
+      console.error(error);
+      toast.error("An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="flex flex-col-reverse md:flex-row relative w-full min-h-screen">
