@@ -6,3 +6,5 @@ export default async function Page() {
   
   return <pre>{JSON.stringify(countries, null, 2)}</pre>
 }
+
+
