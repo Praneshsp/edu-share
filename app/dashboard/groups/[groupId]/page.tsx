@@ -1,61 +1,77 @@
-'use client';
-import React, { useState } from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
-type Course = {
-  id: number;
-  title: string;
-  mentor: string;
-  students: number;
-  description: string;
-};
-
-const courses: Course[] = [
-  {
-    id: 1,
-    title: "Introduction to Computer Science",
-    mentor: "Dr. Smith",
-    students: 24,
-    description: "Learn the fundamentals of computing, including programming, data structures, and algorithms."
-  },
-  {
-    id: 2,
-    title: "Advanced Mathematics",
-    mentor: "Prof. Johnson",
-    students: 18,
-    description: "Deep dive into calculus, linear algebra, and probability, preparing for real-world applications."
-  },
-  {
-    id: 3,
-    title: "Physics 101",
-    mentor: "Dr. Brown",
-    students: 30,
-    description: "Explore classical mechanics, thermodynamics, and wave physics through interactive learning."
-  }
-];
 
 export default function GroupDetailsPage() {
   const router = useRouter();
   const params = useParams();
-  const course = courses.find((course) => course.id === Number(params.groupId));
+  console.log("Params:", params);
+console.log("Group ID:", params?.groupId);
 
+  const supabase = createClient()
+  const [group, setGroup] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isJoined, setIsJoined] = useState(false);
 
-  if (!course) {
-    return <div className="text-center text-red-500 text-xl mt-10">Course not found</div>;
-  }
+  useEffect(() => {
+    const fetchGroup = async () => {
+      const { data, error } = await supabase
+        .from('groups')
+        .select('*')
+        .eq('id', params.groupId as string)
+        .single();
+      console.log(data)
+      if (error) {
+        console.error('Error fetching group:', error);
+      } else {
+        setGroup(data);
+      }
 
-  const handleJoinCourse = () => {
-    setIsJoined(true);
+      setIsLoading(false);
+    };
+
+    fetchGroup();
+  }, [ params.groupId]);
+
+  const handleJoinCourse = async () => {
+    if (!group) return;
+
+    const user = await supabase.auth.getUser();
+    if (!user.data?.user) {
+      alert('You need to log in to join this group.');
+      return;
+    }
+
+    const updatedStudents = [...group.students, user.data.user.id];
+
+    const { error } = await supabase
+      .from('groups')
+      .update({ students: updatedStudents })
+      .eq('id', params.groupId);
+
+    if (error) {
+      console.error('Error joining group:', error);
+    } else {
+      setIsJoined(true);
+      setGroup((prev: any) => ({
+        ...prev,
+        students: updatedStudents
+      }));
+    }
   };
+
+  if (isLoading) return <div className="text-center text-gray-500 mt-10">Loading...</div>;
+  if (!group) return <div className="text-center text-red-500 text-xl mt-10">Group not found</div>;
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-xl mt-10">
-      <h1 className="text-3xl font-bold mb-4 text-gray-800">{course.title}</h1>
-      <p className="text-lg text-gray-600 mb-2">Mentor: <span className="font-semibold">{course.mentor}</span></p>
-      <p className="text-lg text-gray-600 mb-4">Students Enrolled: <span className="font-semibold">{course.students}</span></p>
-      <p className="text-gray-700 text-base leading-relaxed">{course.description}</p>
+      <h1 className="text-3xl font-bold mb-4 text-gray-800">{group.title}</h1>
+      <p className="text-lg text-gray-600 mb-2">Mentor: <span className="font-semibold">{group.mentor_names.join(', ')}</span></p>
+      <p className="text-lg text-gray-600 mb-4">Students Enrolled: <span className="font-semibold">{group.students.length}</span></p>
 
       <div className="mt-6 flex flex-col sm:flex-row gap-4">
         <button
@@ -65,14 +81,14 @@ export default function GroupDetailsPage() {
           }`}
           disabled={isJoined}
         >
-          {isJoined ? "Joined" : "Join Course"}
+          {isJoined ? "Joined" : "Join Group"}
         </button>
 
         <button
           onClick={() => router.back()}
           className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition-all"
         >
-          Back to Courses
+          Back to Groups
         </button>
       </div>
     </div>
