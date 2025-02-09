@@ -43,7 +43,7 @@ export default function GroupDetailsPage() {
     const userId = user.user?.id;
   
     // Prevent joining again if already in the students array
-    if (group.students.includes(userId)) {
+    if ((group.students ?? []).includes(userId)) {
       alert("Already joined this course.");
       return;
     }
