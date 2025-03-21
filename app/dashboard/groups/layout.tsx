@@ -11,7 +11,6 @@ export default async function GroupsLayout({
 
   return (
     <div className="flex">
-      <Sidebar user={user} />
       <main className="flex-1">
         {children}
       </main>
