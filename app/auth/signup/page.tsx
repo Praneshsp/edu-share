@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from "sonner";
 import { Check, X } from 'lucide-react';
-import { login, signup } from '@/actions/auth';
+import { signup } from '@/actions/auth';
+import Image from 'next/image';
 
 
 const PasswordRequirement = ({ isValid, text }: { isValid: boolean; text: string }) => (
@@ -68,8 +69,8 @@ export default function SignUpPage () {
       setVerificationEmail(email);
       toast.success('Account created successfully! Please check your email.');
       
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to create account');
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create account');
       setVerificationEmail(null);
     } finally {
       setIsLoading(false);
@@ -92,14 +93,14 @@ export default function SignUpPage () {
             <h2 className="text-2xl font-bold text-gray-900">Verify your email</h2>
             
             <div className="space-y-4 text-gray-600">
-              <p>We've sent a verification link to:</p>
+              <p>We&apos;ve sent a verification link to:</p>
               <p className="font-medium text-purple-600">{verificationEmail}</p>
               <p>Click the link in the email to verify your account.</p>
             </div>
 
             <div className="pt-4 space-y-4">
               <p className="text-sm text-gray-500">
-                Didn't receive the email? Check your spam folder or
+                Didn&apos;t receive the email? Check your spam folder or
               </p>
               <Button
                 variant="outline"
@@ -115,7 +116,7 @@ export default function SignUpPage () {
               onClick={() => router.push('/auth/login')}
               className="text-gray-600 hover:text-gray-800"
             >
-              I'll verify later, take me to login
+              I&apos;ll verify later, take me to login
             </Button>
           </CardContent>
         </Card>
@@ -129,9 +130,11 @@ export default function SignUpPage () {
 
       <div className="w-full md:w-1/2 p-6 md:p-8 flex items-center justify-center">
         <div className="relative w-full md:max-w-lg max-w-md">
-          <img 
+          <Image 
             src="/signup_logo.jpg" 
             alt="Education platform illustration" 
+            width={500}
+            height={300}
             className="rounded-3xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-300"
           />
           <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/30 to-transparent rounded-3xl" />

@@ -3,14 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { AlertCircle, Users, ChevronLeft, BookOpen, Calendar, MessageCircle, Award, Clock } from 'lucide-react';
+import { AlertCircle, Users, ChevronLeft, MessageCircle } from 'lucide-react';
+import ResourceManager from '@/components/ResourceManager';
+
+export type Group = {
+  id : string;
+  title : string;
+  created_at : string;
+  overview : string;
+  mentor : string;
+  students : string[]
+}
 
 export default function GroupDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const supabase = createClient();
   
-  const [group, setGroup] = useState<any>(null);
+  const [group, setGroup] = useState<Group | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoined, setIsJoined] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -33,14 +43,18 @@ export default function GroupDetailsPage() {
     };
 
     fetchGroup();
-  }, [params.groupId]);
+  }, [params.groupId, supabase]);
 
   const handleJoinCourse = async () => {
     if (!group) return;
   
     const {data : user} = await supabase.auth.getUser();
-  
     const userId = user.user?.id;
+    
+    if (!userId) {
+      alert("Please log in to join this course.");
+      return;
+    }
   
     // Prevent joining again if already in the students array
     if ((group.students ?? []).includes(userId)) {
@@ -48,7 +62,7 @@ export default function GroupDetailsPage() {
       return;
     }
   
-    const updatedStudents = [...group.students, userId];
+    const updatedStudents = [...(group.students || []), userId];
   
     const { error } = await supabase
       .from('groups')
@@ -59,10 +73,10 @@ export default function GroupDetailsPage() {
       console.error('Error joining group:', error);
     } else {
       setIsJoined(true);
-      setGroup((prev: any) => ({
+      setGroup(prev => prev ? {
         ...prev,
         students: updatedStudents
-      }));
+      } : null);
       setShowConfirmation(true);
     }
   };
@@ -98,10 +112,11 @@ export default function GroupDetailsPage() {
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
+    { id: 'resources', label: 'Resources' },
   ];
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
           onClick={() => router.back()}
@@ -118,9 +133,7 @@ export default function GroupDetailsPage() {
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h1 className="text-3xl font-bold text-slate-800 mb-2">{group.title}</h1>
-                  <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-sm rounded-full">
-                    {group.category || 'General'}
-                  </span>
+
                 </div>
                 <button
                   onClick={handleJoinCourse}
@@ -173,9 +186,11 @@ export default function GroupDetailsPage() {
                     through hands-on projects and collaborative learning. Our experienced mentors will guide you through 
                     practical exercises and real-world applications.`}
                   </p>
-                  
-                  
                 </div>
+              )}
+
+              {activeTab === 'resources' && (
+                <ResourceManager groupId={params.groupId as string} />
               )}
             </div>
           </div>
@@ -184,17 +199,13 @@ export default function GroupDetailsPage() {
           <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
               <h3 className="text-lg font-semibold text-slate-800 mb-4">Group Owner</h3>
-                <div className="flex items-center space-x-4 mb-4">
-
-                  <div>
-                    <p className="font-medium text-slate-800">{group.mentor}</p>
-                    <p className="text-sm text-slate-500">Owner</p>
-                  </div>
+              <div className="flex items-center space-x-4 mb-4">
+                <div>
+                  <p className="font-medium text-slate-800">{group.mentor}</p>
+                  <p className="text-sm text-slate-500">Owner</p>
                 </div>
-
+              </div>
             </div>
-
-            {/*  */}
           </div>
         </div>
       </div>

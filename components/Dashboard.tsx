@@ -1,15 +1,19 @@
 import React from 'react'
 
-type Props = {
-    user : any
+interface User {
+  id: string;
+  email?: string;
 }
 
-const Dashboard = ({user}: Props) => {
-    console.log(user)
+type Props = {
+  user: User | null;
+}
+
+const Dashboard = ({ user }: Props) => {
+  console.log(user)
   return (
     <div>
-        Dashboard
-
+      Dashboard
     </div>
   )
 }

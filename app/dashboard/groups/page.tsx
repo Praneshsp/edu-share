@@ -4,46 +4,65 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Plus, Users, BookOpen, Search, X, Crown } from "lucide-react";
 
+interface Group {
+  id: string;
+  title: string;
+  overview: string;
+  mentor: string;
+  students: string[];
+}
+
+interface Profile {
+  name: string;
+}
+
+interface User {
+  id: string;
+  email?: string;
+}
+
 export default function GroupsPage() {
   const supabase = createClient();
   const router = useRouter();
-  const [groups, setGroups] = useState<any[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [user, setUser] = useState<any>();
-  const [profile,setProfile] = useState<any>();
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [newCourse, setNewCourse] = useState({
     title: "",
     mentor: "",
     overview: "",
   });
 
+  console.log(user)
+
+
   useEffect(() => {
     const fetchUser = async () => {
       const { data } = await supabase.auth.getUser();
-
-      setUser(data.user);
-
-              
-      const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("name")
-      .eq("id", data?.user?.id)
-      .single();
-
-      console.log(profileData)
-      
-
-    if (profileError) {
-      console.error("Error fetching user profile:", profileError);
-      return;
-    }
-
-setProfile(profileData);
+      if (data.user) {
+        setUser(data.user);
+      }
     };
     fetchUser();
-  }, []);
+  }, [supabase.auth]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('id', user.id)
+        .single();
+      if (data) {
+        setProfile(data);
+      }
+    };
+    fetchProfile();
+  }, [user, supabase]);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -56,7 +75,7 @@ setProfile(profileData);
       setIsLoading(false);
     };
     fetchGroups();
-  }, []);
+  }, [supabase]);
 
   const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,15 +90,22 @@ setProfile(profileData);
       .insert([{ 
         title: newCourse.title,
         overview: newCourse.overview,
-        mentor: profile.name || 'Unknown',
+        mentor: profile?.name || 'Unknown',
         students: [user.id.toString()],
       }])  
       .select();
   
     if (error) {
       console.error("Error creating course:", error);
-    } else if (data) {
-      setGroups([...groups, data[0]]);
+    } else if (data && data[0]) {
+      const newGroup: Group = {
+        id: data[0].id,
+        title: data[0].title,
+        overview: data[0].overview,
+        mentor: data[0].mentor,
+        students: data[0].students || [],
+      };
+      setGroups(prevGroups => [...prevGroups, newGroup]);
       setShowModal(false);
       setNewCourse({ title: "", mentor: "", overview: "" });
     }
@@ -90,11 +116,8 @@ setProfile(profileData);
     course.mentor.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const isOwner = (course: any) => {
-    console.log(profile);
-    console.log(course);
-    
-    return course.mentor === profile?.name;
+  const isOwner = (course: Group) => {
+    return profile?.name === course.mentor;
   };
 
   if (isLoading) {

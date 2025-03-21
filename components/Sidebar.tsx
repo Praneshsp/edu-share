@@ -9,7 +9,12 @@ import {
 import { Button } from './ui/button'
 import { createClient } from '@/utils/supabase/client'
 
-export function Sidebar({ user } : { user: any }) {
+interface User {
+  id: string;
+  email?: string;
+}
+
+export function Sidebar({ user }: { user: User | null }) {
   const pathname = usePathname()
   const supabase = createClient();
   const router = useRouter();
@@ -65,7 +70,7 @@ export function Sidebar({ user } : { user: any }) {
      <hr className='w-full flex border-primary-gold border'/>
       <p className='pb-4 text-lg font-bold p-4'>
 
-          {user.email}
+          {user?.email}
           <Button className='mt-2' onClick={handleSignOut}>
             Logout <LogOut/>
           </Button>

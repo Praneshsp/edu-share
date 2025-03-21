@@ -6,14 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from "sonner";
 import { login } from '@/actions/auth';
-
-
-export const AUTH_ERRORS : any = {
-  'invalid_credentials': 'Invalid email or password',
-  'email_not_confirmed': 'Please verify your email before logging in',
-  'user_not_found': 'No account found with this email',
-  'default': 'An error occurred. Please try again.'
-};
+import Image from 'next/image';
+import { AUTH_ERRORS } from '../constants';
 
 export default function LoginPage  ()  {
   const router = useRouter();
@@ -38,7 +32,7 @@ export default function LoginPage  ()  {
       toast.success("Successfully logged in!");
       router.push("/dashboard/groups"); 
   
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
       toast.error("An unexpected error occurred.");
     } finally {
@@ -54,9 +48,11 @@ export default function LoginPage  ()  {
 
       <div className="w-full md:w-1/2 p-6 md:p-8 flex items-center justify-center">
         <div className="relative w-full md:max-w-lg max-w-md">
-          <img 
+          <Image 
             src="/signup_logo.jpg" 
             alt="Education platform illustration" 
+            width={500}
+            height={300}
             className="rounded-3xl shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-300"
           />
           <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/30 to-transparent rounded-3xl" />
@@ -135,7 +131,7 @@ export default function LoginPage  ()  {
             </Button>
 
             <p className="text-center text-base text-gray-600">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <a 
                 className="font-semibold cursor-pointer text-purple-600 hover:text-purple-500" 
                 onClick={() => router.push('/auth/signup')}

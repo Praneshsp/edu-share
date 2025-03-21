@@ -11,20 +11,15 @@ interface Mentor {
   created_at: string;
 }
 
-interface SessionRequest {
+interface User {
   id: string;
-  mentor_id: string;
-  user_email: string;
-  session_date: string;
-  session_time: string;
-  status: 'pending' | 'confirmed' | 'rejected';
-  created_at: string;
+  email?: string;
 }
 
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -99,27 +94,25 @@ export default function MentorsPage() {
   const [bookingDate, setBookingDate] = useState<Date | null>(null);
   const [bookingTime, setBookingTime] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
-  const [user,setUser] = useState<any>();
-  // Inside the component:
-const handleDateSelect: SelectSingleEventHandler = (day: Date | undefined) => {
-  if (day) {
-    setBookingDate(day);
-  }
-};
+  const [user, setUser] = useState<User | null>(null);
+
+  const handleDateSelect: SelectSingleEventHandler = (day: Date | undefined) => {
+    if (day) {
+      setBookingDate(day);
+    }
+  };
 
   const { toast } = useToast();
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchMentors();
-    fetchUser();
-  }, []);
-
-  async  function fetchUser() {
+  const fetchUser = useCallback(async () => {
     const { data } = await supabase.auth.getUser();
-    setUser(data.user);
-  }
-  async function fetchMentors() {
+    if (data.user) {
+      setUser(data.user);
+    }
+  }, [supabase.auth]);
+
+  const fetchMentors = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('mentors')
@@ -138,7 +131,12 @@ const handleDateSelect: SelectSingleEventHandler = (day: Date | undefined) => {
     } finally {
       setLoading(false);
     }
-  }
+  }, [supabase, toast]);
+
+  useEffect(() => {
+    fetchMentors();
+    fetchUser();
+  }, [fetchMentors, fetchUser]);
   
   async function addUserToMentor(mentorId: string, userId: string) {
     try {
@@ -188,18 +186,17 @@ const handleDateSelect: SelectSingleEventHandler = (day: Date | undefined) => {
   async function handleBookSession(e: React.FormEvent) {
     e.preventDefault();
     
-    if (!selectedMentor || !bookingDate || !bookingTime || !userEmail) {
+    if (!selectedMentor || !bookingDate || !bookingTime || !userEmail || !user) {
       toast({
         title: 'Error',
-        description: 'Please fill in all required fields',
+        description: 'Please fill in all required fields and ensure you are logged in',
         variant: 'destructive',
       });
       return;
     }
   
     try {
-      // Get the current user's ID (you'll need to implement user authentication)
-      const userId = user.id; // Replace with actual user ID from your auth system
+      const userId = user.id;
       
       // Add user to mentor's user_ids array
       await addUserToMentor(selectedMentor.id, userId);
