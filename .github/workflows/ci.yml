@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  sonar_scan:
+  sonar:
     runs-on: ubuntu-latest
     needs: security-check
     if: ${{ github.event.inputs.skip_sonarqube != 'true' }} # Skips if skip_sonarqube is 'true'
